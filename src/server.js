@@ -16,6 +16,8 @@ internals.Server = function () {
   const app = express();
   app.use(stacktrace);
   routes(app);
+  // /health endpoint is used to test the status applications. Some cloud services use it in order to test
+  // the status of the application
   app.get("/health", async (req, res) => await res.send("ok"));
   app.listen(envs.PORT, () => {
     console.log(`Server is listening on ${envs.PORT}`);
