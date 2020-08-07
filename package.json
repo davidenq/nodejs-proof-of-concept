@@ -1,11 +1,11 @@
 {
   "name": "webapp",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A simple web application to prove the ci-cd workflow",
   "main": "index.js",
   "scripts": {
     "dev": "NODE_ENV=development nodemon -r dotenv/config --inspect=0.0.0.0 index.js",
-    "test": "lab -v **/*.test.js"
+    "test": "lab -v **/*.test.js -t 100 -L"
   },
   "repository": {
     "type": "git",
