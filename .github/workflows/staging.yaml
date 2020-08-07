@@ -69,4 +69,4 @@ jobs:
       - name: Install beta commands and deploy on cloud run
         run: |
           gcloud components install beta --quiet
-          gcloud beta run deploy ${{ secrets.GCLOUD_APP_NAME }} --set-env-vars PORT=8080 --set-env-vars NODE_ENV=staging --quiet --image gcr.io/${{ secrets.GCLOUD_PROJECT }}/${{ secrets.GCLOUD_APP_NAME }} --project ${{ secrets.GCLOUD_PROJECT }} --region europe-west1 --platform managed
+          gcloud beta run deploy ${{ secrets.GCLOUD_APP_NAME }} --set-env-vars NODE_ENV=staging --quiet --image gcr.io/${{ secrets.GCLOUD_PROJECT }}/${{ secrets.GCLOUD_APP_NAME }} --project ${{ secrets.GCLOUD_PROJECT }} --region us-east1 --platform managed --allow-unauthenticated
