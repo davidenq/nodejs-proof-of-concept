@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "NODE_ENV=development nodemon -r dotenv/config --inspect=0.0.0.0 index.js",
-    "test": "lab -v **/*.test.js -t 100 -L"
+    "test": "lab -v **/*.test.js -t 63 -L"
   },
   "repository": {
     "type": "git",
