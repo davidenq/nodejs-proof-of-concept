@@ -1,0 +1,71 @@
+name: CI/CD
+on:
+  pull_request:
+    branches: [staging]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Test applicaiton
+        run: npm run test
+  approve:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Approve pull request
+        uses: andrewmusgrave/automatic-pull-request-review@0.0.2
+        with:
+          repo-token: "${{ secrets.GITHUB_TOKEN }}"
+          event: APPROVE
+          body: "Thank you dependabot 🎊"
+  build-and-push-on-dockerhub:
+    needs: approve
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Login to DockerHub Registry
+        run: echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
+
+      - name: Build the tagged Docker image
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/${{ secrets.GCLOUD_APP_NAME }}:$(node -p "require('./package.json').version") .
+
+      - name: Push the tagged Docker image
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/${{ secrets.GCLOUD_APP_NAME }}:$(node -p "require('./package.json').version")
+  deploy-on-gcr:
+    name: Deploy job
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v1
+
+      - name: Build Docker image
+        run: |
+          docker build . --tag gcr.io/${{ secrets.GCLOUD_PROJECT }}/${{ secrets.GCLOUD_APP_NAME }}
+
+      - name: Authenticate into Google Cloud Platform
+        uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+        with:
+          service_account_email: ${{ secrets.GCLOUD_EMAIL }}
+          service_account_key: ${{ secrets.GCLOUD_AUTH }}
+
+      - name: Configure Docker to use Google Cloud Platform
+        run: "gcloud auth configure-docker --quiet"
+
+      - name: Push image to Google Cloud Container Registry
+        run: docker push gcr.io/${{ secrets.GCLOUD_PROJECT }}/${{ secrets.GCLOUD_APP_NAME }}
+
+      - name: Install beta commands and deploy on cloud run
+        run: |
+          gcloud components install beta --quiet
+          gcloud beta run deploy ${{ secrets.GCLOUD_APP_NAME }} --quiet --image gcr.io/${{ secrets.GCLOUD_PROJECT }}/${{ secrets.GCLOUD_APP_NAME }} --project ${{ secrets.GCLOUD_PROJECT }} --region europe-west1 --platform managed
