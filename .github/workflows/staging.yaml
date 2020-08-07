@@ -4,11 +4,17 @@ on:
     branches: [staging]
 jobs:
   release:
-    name: Generate git tag
+    name: Setup
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout the code
+      - name: checkout
         uses: actions/checkout@v1
-
-      - name: Generate and push git tag
-        run: git tag -a v$(node -p "require('./package.json').version") -m "v$(node -p "require('./package.json').version")" && git push origin --tags --global
+      - name: setup Node
+        uses: actions/setup-node@v1
+      - name: package-version-to-git-tag
+        uses: pkgdeps/action-package-version-to-git-tag@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_repo: ${{ github.repository }}
+          git_commit_sha: ${{ github.sha }}
+          git_tag_prefix: "v"
