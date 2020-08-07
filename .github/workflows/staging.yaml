@@ -43,6 +43,7 @@ jobs:
       - name: Push the tagged Docker image
         run: docker push ${{ secrets.DOCKER_USERNAME }}/${{ secrets.GCLOUD_APP_NAME }}:$(node -p "require('./package.json').version")
   deploy-on-gcr:
+    needs: approve
     name: Deploy job
     runs-on: ubuntu-latest
     steps:
@@ -68,4 +69,4 @@ jobs:
       - name: Install beta commands and deploy on cloud run
         run: |
           gcloud components install beta --quiet
-          gcloud beta run deploy ${{ secrets.GCLOUD_APP_NAME }} --quiet --image gcr.io/${{ secrets.GCLOUD_PROJECT }}/${{ secrets.GCLOUD_APP_NAME }} --project ${{ secrets.GCLOUD_PROJECT }} --region europe-west1 --platform managed
+          gcloud beta run deploy ${{ secrets.GCLOUD_APP_NAME }} --set-env-vars PORT=8080 --set-env-vars NODE_ENV=staging --quiet --image gcr.io/${{ secrets.GCLOUD_PROJECT }}/${{ secrets.GCLOUD_APP_NAME }} --project ${{ secrets.GCLOUD_PROJECT }} --region europe-west1 --platform managed
